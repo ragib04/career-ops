@@ -2342,7 +2342,29 @@ const PROCESSED_MARKERS = ['## Processed', '## Procesadas'];
 // read-modify-write and silently drop each other's offers.
 // Same seam as loadSeenUrls above: the default is the CAREER_OPS_ROOT-anchored
 // module constant; a caller with its own lane (or a fixture) passes the path.
+// export async function appendToPipeline(offers, { pipelinePath = PIPELINE_PATH } = {}) {
+//   if (offers.length === 0) return;
+
 export async function appendToPipeline(offers, { pipelinePath = PIPELINE_PATH } = {}) {
+
+  // Keep only the best 50 jobs
+  const score = (title = "") => {
+    title = title.toLowerCase();
+
+    if (title.includes("ai engineer")) return 100;
+    if (title.includes("machine learning")) return 95;
+    if (title.includes("backend engineer")) return 90;
+    if (title.includes("software engineer")) return 85;
+    if (title.includes("full stack")) return 80;
+    if (title.includes("founding engineer")) return 75;
+
+    return 0;
+  };
+
+  offers = offers
+    .sort((a, b) => score(b.title) - score(a.title))
+    .slice(0, 150);
+
   if (offers.length === 0) return;
 
   await withPipelineLock(pipelinePath, async () => {
